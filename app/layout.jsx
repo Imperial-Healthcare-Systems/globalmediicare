@@ -1,9 +1,9 @@
 import "./globals.css";
 
 const SITE = "https://www.globalmediicare.com";
-const TITLE = "Globalmediicare — World-Class Healthcare Without Borders";
+const TITLE = "Globalmediicare — World-Class Healthcare in India";
 const DESC =
-  "Globalmediicare is an international medical concierge helping patients access leading doctors and hospitals across India, Turkey, Thailand, UAE, Germany, Egypt and beyond.";
+  "Globalmediicare is an international medical concierge connecting patients worldwide with India's leading doctors and accredited hospitals — free case management, transparent estimates in 48 hours, visa and travel handled.";
 
 export const metadata = {
   metadataBase: new URL(SITE),

@@ -24,12 +24,16 @@ export async function POST(request) {
   }
 
   const lead = {
+    source: (data?.source || "inline").trim(),
     name,
     country,
+    email: (data?.email || "").trim(),
     dialCode: (data?.dialCode || "").trim(),
     phone,
     destination: (data?.destination || "").trim(),
     treatment,
+    preferredDate: (data?.preferredDate || "").trim(),
+    preferredSlot: (data?.preferredSlot || "").trim(),
     message: (data?.message || "").trim(),
     receivedAt: new Date().toISOString(),
   };

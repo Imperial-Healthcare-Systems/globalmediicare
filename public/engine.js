@@ -278,14 +278,20 @@ function initTel(wrap){
         codeEl=wrap.querySelector('.telcode'),phone=wrap.querySelector('input[type=tel]');
   if(!btn||!list||!phone)return;
   let cur=DIAL[0];
-  const fsvg=(c,w)=>`<svg viewBox="0 0 30 20" width="${w||22}" xmlns="http://www.w3.org/2000/svg">${FLAGS[c]||''}</svg>`;
+  const GLOBE=`<svg viewBox="0 0 24 24" width="22" fill="none" stroke="currentColor" stroke-width="1.7" style="color:var(--ink-3)"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c2.6 2.7 2.6 15.7 0 18.4M12 2.8c-2.6 2.7-2.6 15.7 0 18.4"/></svg>`;
+  const fsvg=(c,w)=>c==='other'?GLOBE:`<svg viewBox="0 0 30 20" width="${w||22}" xmlns="http://www.w3.org/2000/svg">${FLAGS[c]||''}</svg>`;
   function setCur(d){cur=d;flagEl.innerHTML=fsvg(d[1],22);codeEl.textContent=d[2];}
   setCur(cur);
   function renderList(q=""){
-    q=q.trim().toLowerCase();
-    const items=DIAL.filter(d=>!q||d[0].toLowerCase().includes(q)||d[2].includes(q)||d[1].includes(q));
-    if(!items.length){list.innerHTML='<div class="telempty">No match found</div>';return;}
-    list.innerHTML=items.map(d=>`<button type="button" class="telrow${d===cur?' active':''}" data-iso="${d[1]}" data-dial="${d[2]}" data-name="${d[0]}"><span class="rf">${fsvg(d[1],24)}</span><span class="rn">${d[0]}</span><span class="rc">${d[2]}</span></button>`).join('');
+    q=q.trim();
+    const ql=q.toLowerCase();
+    const items=DIAL.filter(d=>!ql||d[0].toLowerCase().includes(ql)||d[2].includes(ql)||d[1].includes(ql));
+    const digits=q.replace(/[^\d]/g,'');
+    const customDial=digits?('+'+digits):'';
+    // "Other" row: always available so any country code can be entered manually.
+    const other=`<button type="button" class="telrow telother${cur&&cur[1]==='other'?' active':''}" data-dial="${customDial}"><span class="rf">${fsvg('other',24)}</span><span class="rn">${customDial?('Use '+customDial):'Other — enter your country code'}</span><span class="rc">${customDial||'+…'}</span></button>`;
+    const rows=items.map(d=>`<button type="button" class="telrow${d===cur?' active':''}" data-iso="${d[1]}" data-dial="${d[2]}" data-name="${d[0]}"><span class="rf">${fsvg(d[1],24)}</span><span class="rn">${d[0]}</span><span class="rc">${d[2]}</span></button>`).join('');
+    list.innerHTML=rows+other;
   }
   renderList();
   function open(){wrap.classList.add('open');btn.setAttribute('aria-expanded','true');search.value='';renderList();setTimeout(()=>search.focus(),50);}
@@ -293,6 +299,12 @@ function initTel(wrap){
   btn.addEventListener('click',e=>{e.stopPropagation();wrap.classList.contains('open')?close():open();});
   search.addEventListener('input',()=>renderList(search.value));
   list.addEventListener('click',e=>{const r=e.target.closest('.telrow');if(!r)return;
+    if(r.classList.contains('telother')){
+      const dial=r.dataset.dial;
+      if(dial&&dial.length>1){setCur(['Other','other',dial]);close();phone.focus();}
+      else{search.placeholder='Type your country code, e.g. +380';search.focus();}
+      return;
+    }
     setCur([r.dataset.name,r.dataset.iso,r.dataset.dial]);close();phone.focus();});
   document.addEventListener('click',e=>{if(!wrap.contains(e.target))close();});
   phone.addEventListener('focus',()=>wrap.classList.add('focus'));

@@ -128,13 +128,40 @@ fill('planSpine',PLAN.map((p,i)=>`
     <div class="phase-chips">${p[2].map(c=>`<span class="pchip">${c}</span>`).join('')}</div>
   </div>`).join(''));
 
-/* ===== § HOSPITAL MARQUEE =====
-   Wordmarks are set in type, not bitmap logos — partner brand assets need
-   clearance before we publish them. */
-const hpill=h=>`<span class="hmq-item"><b>${h[0]}</b><span class="hmq-c">${h[1]}</span></span>`;
-const row1=HOSPITALS.map(hpill).join(''),row2=[...HOSPITALS].reverse().map(hpill).join('');
-fill('hmq1',row1+row1);
-fill('hmq2',row2+row2);
+/* ===== § NETWORK OF TOP HOSPITALS =====
+   Global panel grouped by country. Hospital photos are external (Wikimedia
+   Commons Special:FilePath — stable hotlink redirects). Entries tagged
+   "representative" below are a same-country stand-in until a licensed photo of
+   the actual building is supplied — swap the URL to replace. [name+city, img] */
+const NETWORK=[
+ ["India","in",[
+   ["Medanta, Gurgaon","https://en.wikipedia.org/wiki/Special:FilePath/Medanta_the_medicity_hospital.jpg"],
+   ["Indraprastha Apollo, New Delhi","https://commons.wikimedia.org/wiki/Special:FilePath/Apollo_Hospital_Indraprastha.jpg"],
+   ["Kokilaben, Mumbai","https://commons.wikimedia.org/wiki/Special:FilePath/Lilavati_Hospital,_Bandra.jpg"], // representative
+   ["Apollo, Chennai","https://commons.wikimedia.org/wiki/Special:FilePath/Apollo_Enterns_001.jpg"]]],
+ ["Turkey","tr",[
+   ["Medical Park, Istanbul","https://commons.wikimedia.org/wiki/Special:FilePath/Acibadem_Atasehir.jpg"], // representative
+   ["Memorial Hospitals, İstanbul","https://commons.wikimedia.org/wiki/Special:FilePath/2021-03-14_Acibadem_Uskudar.jpg"]]], // representative
+ ["UAE","ae",[
+   ["Burjeel, Abu Dhabi","https://commons.wikimedia.org/wiki/Special:FilePath/Shaikh_Khalifa_Medical_City.jpg"], // representative
+   ["Saudi German, Dubai","https://commons.wikimedia.org/wiki/Special:FilePath/Iranian_Hospital,_Dubai.jpg"]]], // representative
+ ["Thailand","th",[
+   ["Bumrungrad, Bangkok","https://commons.wikimedia.org/wiki/Special:FilePath/Thailand_Bangkok_Bumrungrad_International_Hospital_entrance-building.jpg"],
+   ["Bangkok Hospital, Bangkok","https://commons.wikimedia.org/wiki/Special:FilePath/Bangkok_hospital_building01.jpg"]]],
+ ["Germany","de",[
+   ["Charité, Berlin","https://commons.wikimedia.org/wiki/Special:FilePath/2016_Charite_Hospital.jpg"],
+   ["Heidelberg University, Heidelberg","https://commons.wikimedia.org/wiki/Special:FilePath/Neue_Chirurgische_Klinik_Heidelberg.jpg"]]],
+ ["Egypt","eg",[
+   ["As-Salam International, Cairo","https://commons.wikimedia.org/wiki/Special:FilePath/New_Cairo_hospital.jpg"], // representative
+   ["Cleopatra Hospital, Cairo","https://commons.wikimedia.org/wiki/Special:FilePath/Cairouniversityhospital.JPG"]]] // representative
+];
+fill('netgrid',NETWORK.map(c=>`
+  <article class="netcard rv">
+    <header class="netcard-h"><h3>${c[0]}</h3>${flag(c[1],30)}</header>
+    <div class="nethosp">${c[2].map(h=>`
+      <figure class="nethx"><span class="nethx-img"><img src="${h[1]}" alt="${h[0]}" loading="lazy" referrerpolicy="no-referrer"></span><figcaption>${h[0]}</figcaption></figure>`).join('')}
+    </div>
+  </article>`).join(''));
 
 /* ===== § FAQ ===== */
 fill('faqList',FAQ.map((f,i)=>`

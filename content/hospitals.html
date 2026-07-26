@@ -1,0 +1,39 @@
+<main id="top">
+<section class="dirhero" data-dark>
+  <div class="dirhero-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="eyebrow lt">Our Network of Hospitals</p>
+    <h1 class="dirhero-h">Accredited Hospitals Worldwide</h1>
+    <p class="dirhero-sub">We rigorously vet every hospital before adding it to our panel — internationally accredited institutions across six countries, chosen for outcomes, technology and standard of care.</p>
+  </div>
+</section>
+
+<section class="dirsec">
+  <div class="wrap">
+    <div class="dirbar rv">
+      <div class="dirsearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="hospSearch" placeholder="Search by hospital, city or specialty" aria-label="Search hospitals">
+      </div>
+      <div class="dirfilters">
+        <label class="dirsel"><span>Country</span><select id="hCountry" aria-label="Filter by country"><option value="">All countries</option></select></label>
+        <label class="dirsel"><span>Specialty</span><select id="hSpec" aria-label="Filter by specialty"><option value="">All specialties</option></select></label>
+        <label class="dirsel"><span>Accreditation</span><select id="hAccred" aria-label="Filter by accreditation"><option value="">Any accreditation</option></select></label>
+      </div>
+    </div>
+    <p class="dircount" id="hospCount" aria-live="polite"></p>
+    <div class="hospgrid rv" id="hospGrid"></div>
+    <div class="dirempty" id="hospEmpty" hidden>No hospitals match your filters. <button type="button" id="hospReset" class="linkbtn">Clear filters</button></div>
+  </div>
+</section>
+
+<section class="dircta" data-dark>
+  <div class="wrap dircta-in">
+    <div>
+      <h2>Want a hospital recommendation?</h2>
+      <p>Tell us your diagnosis and budget — we'll shortlist the best-matched accredited hospitals and share an itemised cost estimate in 48 hours.</p>
+    </div>
+    <a href="/#consult" class="btn btn-gold">Get a Free Quote</a>
+  </div>
+</section>
+</main>

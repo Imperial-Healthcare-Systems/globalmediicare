@@ -48,3 +48,31 @@ npm run dev             # http://localhost:3000
 ```bash
 npm run build && npm start
 ```
+
+## Doctors & Hospitals — pages + admin panel
+
+`/doctors` and `/hospitals` are filterable listing pages. Their data is served by
+`/api/doctors` and `/api/hospitals`, which read from **Supabase** when configured
+and otherwise fall back to bundled sample data (`lib/seed.js`) — so the site works
+before any backend is wired. Content is managed from the **`/admin`** panel
+(Supabase Auth login, full create/update/delete for both tables).
+
+### Go live with Supabase
+1. Create a Supabase project. In **Project Settings → API**, copy the URL and the
+   `anon` public key.
+2. `cp .env.local.example .env.local` and fill in:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=…
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=…
+   ```
+3. Open the Supabase **SQL editor** and run **`db/schema.sql`** (creates the
+   `doctors` + `hospitals` tables, RLS policies, and seeds the sample rows).
+4. Under **Authentication → Users**, add an admin user (email + password). Any
+   signed-in user can edit content (RLS allows authenticated writes only).
+5. Restart the dev/prod server. Visit `/admin`, sign in, and manage listings —
+   changes appear immediately on `/doctors` and `/hospitals`.
+
+Without steps 1–4 the pages still render (sample data) and `/admin` shows a
+"not configured" notice. Hospital accreditation / beds / established values in the
+seed are **illustrative** and doctors are **fictional** — replace with verified
+data before publishing.

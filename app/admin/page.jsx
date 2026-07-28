@@ -103,7 +103,11 @@ export default function AdminPage() {
     const payload = { ...editing };
     // normalise numbers + arrays
     SCHEMA[tab].fields.forEach((f) => {
-      if (f.t === "number") payload[f.k] = payload[f.k] === "" || payload[f.k] == null ? null : Number(payload[f.k]);
+      if (f.t === "number") {
+        const empty = payload[f.k] === "" || payload[f.k] == null;
+        // sort_order is NOT NULL (default 0); other numerics are nullable.
+        payload[f.k] = empty ? (f.k === "sort_order" ? 0 : null) : Number(payload[f.k]);
+      }
       if (f.t === "array") payload[f.k] = toArray(payload[f.k]);
     });
     let res;

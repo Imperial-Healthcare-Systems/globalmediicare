@@ -83,7 +83,10 @@ function initDoctors() {
         (d.hospital ? "<li>" + I.hosp + "<span>" + esc(d.hospital) + "</span></li>" : "") +
         (d.city || d.country ? "<li>" + flag(d.country, 20) + "<span>" + esc(d.city) + (d.city && d.country ? ", " : "") + cname(d.country) + "</span></li>" : "") +
       "</ul>" +
-      '<a href="/#consult" class="btn btn-gold docbtn">Free Opinion</a></article>';
+      '<button type="button" class="btn btn-gold docbtn" data-q="doctor"' +
+        ' data-qname="' + esc(d.name) + '" data-qspec="' + esc(d.specialty) + '"' +
+        ' data-qhosp="' + esc(d.hospital) + '"' +
+        ' data-qloc="' + esc((d.city || "") + (d.city && d.country ? ", " : "") + cname(d.country)) + '">Free Opinion</button></article>';
   }
   function render() {
     var q = (search.value || "").trim().toLowerCase(), sp = fSpec.value, co = fCountry.value;
@@ -142,7 +145,9 @@ function initHospitals() {
           (specs.length ? "<li><b>" + specs.length + "+</b><span>Specialties</span></li>" : "") +
         "</ul>" +
         (specs.length ? '<div class="hospspecs">' + specs.slice(0, 4).map(function (s) { return '<span class="sptag">' + esc(s) + "</span>"; }).join("") + "</div>" : "") +
-        '<a href="/#consult" class="btn btn-gold hospbtn">Get Free Quote</a>' +
+        '<button type="button" class="btn btn-gold hospbtn" data-q="hospital"' +
+          ' data-qname="' + esc(h.name) + '"' +
+          ' data-qloc="' + esc((h.city || "") + (h.city && h.country ? ", " : "") + cname(h.country)) + '">Get Free Quote</button>' +
       "</div></article>";
   }
   function render() {
@@ -173,6 +178,98 @@ function initHospitals() {
   }).catch(function () { count.textContent = "Could not load hospitals. Please refresh."; });
 }
 
+/* ===== ENQUIRY / QUOTE MODAL =====
+   Built once, opened pre-filled from any "Get Free Quote" (hospital) or
+   "Free Opinion" (doctor) button. Submits to the existing /api/consult. */
+function initEnquiry() {
+  if (document.getElementById("qmodal")) return;
+  var current = null; // { kind, destination, treatment }
+  var m = document.createElement("div");
+  m.className = "qmodal"; m.id = "qmodal"; m.setAttribute("aria-hidden", "true");
+  m.innerHTML =
+    '<div class="qmodal-ov" data-qclose></div>' +
+    '<div class="qmodal-card" role="dialog" aria-modal="true" aria-labelledby="qmTitle">' +
+      '<button class="qmodal-x" data-qclose aria-label="Close">&times;</button>' +
+      '<p class="eyebrow lt">Free &middot; No obligation</p>' +
+      '<h3 id="qmTitle">Get a Free Quote</h3>' +
+      '<div class="qmsel" id="qmSel"></div>' +
+      '<form id="qmForm" class="qmform" novalidate>' +
+        '<div class="qmf"><label for="qmName">Full name *</label><input id="qmName" name="name" required autocomplete="name"></div>' +
+        '<div class="qmf"><label for="qmPhone">Phone *</label><input id="qmPhone" name="phone" required autocomplete="tel" inputmode="tel"></div>' +
+        '<div class="qmf"><label for="qmEmail">Email</label><input id="qmEmail" name="email" type="email" autocomplete="email"></div>' +
+        '<div class="qmf"><label for="qmCountry">Your country *</label><input id="qmCountry" name="country" required autocomplete="country-name"></div>' +
+        '<div class="qmf full"><label for="qmMsg">Treatment / message</label><textarea id="qmMsg" name="message" rows="3"></textarea></div>' +
+        '<p class="qmerr" id="qmErr" hidden></p>' +
+        '<div class="qmf full qmactions"><button type="submit" class="btn btn-gold" id="qmBtn">Request Quote</button></div>' +
+        '<p class="qmnote full">We reply within 48 hours. Your details stay confidential.</p>' +
+      "</form>" +
+      '<div class="qmsucc" id="qmSucc" hidden>' +
+        '<div class="qmsucc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        "<h3>Request received</h3><p>Thank you &mdash; our care team will contact you within 48 hours with your personalised quote.</p>" +
+        '<button class="btn btn-line" data-qclose>Close</button>' +
+      "</div>" +
+    "</div>";
+  document.body.appendChild(m);
+
+  var form = m.querySelector("#qmForm"), succ = m.querySelector("#qmSucc"),
+      err = m.querySelector("#qmErr"), btn = m.querySelector("#qmBtn"),
+      title = m.querySelector("#qmTitle"), sel = m.querySelector("#qmSel");
+
+  function close() { m.classList.remove("open"); m.setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
+  function open(opts) {
+    current = opts;
+    title.textContent = opts.kind === "doctor" ? "Free Medical Opinion" : "Get a Free Quote";
+    sel.innerHTML = '<span class="qmsel-k">' + (opts.kind === "doctor" ? "Doctor" : "Hospital") + "</span>" +
+      "<b>" + esc(opts.label) + "</b>" + (opts.subLabel ? '<span class="qmsel-s">' + esc(opts.subLabel) + "</span>" : "");
+    form.hidden = false; succ.hidden = true; err.hidden = true;
+    btn.disabled = false; btn.textContent = "Request Quote";
+    form.reset();
+    m.classList.add("open"); m.setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+    setTimeout(function () { var n = m.querySelector("#qmName"); if (n) n.focus(); }, 60);
+  }
+  m.__openEnquiry = open;
+
+  m.querySelectorAll("[data-qclose]").forEach(function (el) { el.addEventListener("click", close); });
+  m.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    err.hidden = true;
+    var name = form.name.value.trim(), phone = form.phone.value.trim(), country = form.country.value.trim();
+    if (!name || !phone || !country) { err.textContent = "Please fill in your name, phone and country."; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "Sending…";
+    fetch("/api/consult", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: current.kind === "doctor" ? "doctors-page" : "hospitals-page",
+        name: name, phone: phone, country: country,
+        email: form.email.value.trim(),
+        destination: current.destination || "",
+        treatment: current.treatment || "",
+        message: form.message.value.trim(),
+      }),
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.j.ok) throw new Error(res.j && res.j.error ? res.j.error : "Something went wrong.");
+        form.hidden = true; succ.hidden = false;
+      })
+      .catch(function (ex) { err.textContent = ex.message || "Could not send. Please try again."; err.hidden = false; btn.disabled = false; btn.textContent = "Request Quote"; });
+  });
+
+  // Open from any card button (event delegation survives grid re-renders)
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-q]");
+    if (!b) return;
+    e.preventDefault();
+    if (b.dataset.q === "hospital") {
+      open({ kind: "hospital", label: b.dataset.qname, subLabel: b.dataset.qloc, destination: b.dataset.qname });
+    } else if (b.dataset.q === "doctor") {
+      var subBits = [b.dataset.qspec, b.dataset.qhosp, b.dataset.qloc].filter(Boolean).join(" · ");
+      open({ kind: "doctor", label: b.dataset.qname, subLabel: subBits, destination: b.dataset.qhosp, treatment: b.dataset.qspec });
+    }
+  });
+}
+
 /* ===== SHARED CHROME (drawer + sticky header + progress) ===== */
 function initChrome() {
   var hdr = document.getElementById("hdr"), progress = document.getElementById("progress"),
@@ -196,7 +293,7 @@ function initChrome() {
   onScroll();
 }
 
-function boot() { initChrome(); initDoctors(); initHospitals(); reveal(document); }
+function boot() { initChrome(); initEnquiry(); initDoctors(); initHospitals(); reveal(document); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
 else boot();
 })();

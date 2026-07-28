@@ -1018,3 +1018,34 @@ ul{list-style:none}button{font-family:inherit}
 .adm-login-card .adm-field{margin-bottom:1rem}
 .adm-login-card .adm-btn{width:100%;justify-content:center;padding:.75rem}
 @media(max-width:560px){.adm-form{grid-template-columns:1fr}}
+
+/* Directory enquiry / quote modal (built by directory.js) */
+.qmodal{position:fixed;inset:0;z-index:200;display:none;align-items:flex-start;justify-content:center;padding:2.5rem 1rem;overflow-y:auto}
+.qmodal.open{display:flex}
+.qmodal-ov{position:fixed;inset:0;background:rgba(8,39,34,.6);backdrop-filter:blur(3px)}
+.qmodal-card{position:relative;z-index:1;width:100%;max-width:560px;background:#fff;border-radius:20px;box-shadow:var(--sh-lg);padding:2rem 2rem 1.6rem;animation:qmpop .3s var(--e2)}
+@keyframes qmpop{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.qmodal-x{position:absolute;top:1rem;right:1rem;width:34px;height:34px;border:none;background:var(--stone);border-radius:50%;color:var(--ink-2);font-size:1.3rem;line-height:1;cursor:pointer;transition:background .2s}
+.qmodal-x:hover{background:var(--line)}
+.qmodal-card h3{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;color:var(--emerald);margin:.15rem 0 0}
+.qmsel{display:flex;flex-direction:column;gap:.1rem;background:var(--ivory);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:.7rem .9rem;margin:1rem 0 1.3rem}
+.qmsel-k{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.qmsel b{font-size:1.02rem;color:var(--emerald);font-weight:700}
+.qmsel-s{font-size:.82rem;color:var(--ink-2)}
+.qmform{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.qmf{display:flex;flex-direction:column;gap:.3rem}
+.qmf.full{grid-column:1/-1}
+.qmf label{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.qmf input,.qmf textarea{font:inherit;font-size:.94rem;padding:.62rem .75rem;border:1px solid var(--line);border-radius:10px;background:var(--ivory);color:var(--ink);width:100%}
+.qmf textarea{resize:vertical}
+.qmf input:focus,.qmf textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+.qmactions{margin-top:.3rem}
+.qmactions .btn{width:100%;justify-content:center;padding:.8rem}
+.qmerr{grid-column:1/-1;margin:0;color:#b23b3b;background:#fbeaea;border:1px solid #e5b4b4;border-radius:9px;padding:.55rem .8rem;font-size:.85rem;font-weight:600}
+.qmnote{margin:.3rem 0 0;font-size:.78rem;color:var(--ink-3);text-align:center}
+.qmsucc{text-align:center;padding:1.2rem .5rem .4rem}
+.qmsucc-ic{width:60px;height:60px;margin:0 auto 1rem;border-radius:50%;background:rgba(26,95,87,.12);color:var(--emerald);display:flex;align-items:center;justify-content:center}
+.qmsucc-ic svg{width:30px;height:30px}
+.qmsucc h3{margin:0 0 .4rem}
+.qmsucc p{color:var(--ink-2);margin:0 0 1.3rem;line-height:1.55}
+@media(max-width:520px){.qmform{grid-template-columns:1fr}.qmodal-card{padding:1.6rem 1.3rem}}

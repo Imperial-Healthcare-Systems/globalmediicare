@@ -1049,3 +1049,87 @@ ul{list-style:none}button{font-family:inherit}
 .qmsucc h3{margin:0 0 .4rem}
 .qmsucc p{color:var(--ink-2);margin:0 0 1.3rem;line-height:1.55}
 @media(max-width:520px){.qmform{grid-template-columns:1fr}.qmodal-card{padding:1.6rem 1.3rem}}
+
+/* ============================================================
+   §  TREATMENT COST  (/treatment-cost + /treatment-cost/[slug])
+   ============================================================ */
+/* landing */
+.tcgroup{margin-bottom:2.8rem}
+.tcgroup-h{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.8rem;color:var(--emerald);margin:0 0 1.1rem;padding-bottom:.6rem;border-bottom:1px solid var(--line)}
+.tcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem}
+.tccard{display:flex;flex-direction:column;gap:.7rem;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.35rem;box-shadow:var(--sh-sm);transition:transform .3s var(--e2),box-shadow .3s var(--e2)}
+.tccard:hover{transform:translateY(-4px);box-shadow:var(--sh)}
+.tccard-h{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
+.tccard-h h3{margin:0;font-size:1.12rem;font-weight:700;color:var(--emerald);line-height:1.25}
+.tccard-cat{flex-shrink:0;font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--stone);border-radius:5px;padding:.2rem .45rem}
+.tccard-desc{margin:0;font-size:.86rem;line-height:1.55;color:var(--ink-2);flex:1}
+.tccard-f{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding-top:.8rem;border-top:1px solid var(--line)}
+.tccard-cost{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.22rem;color:var(--gold-2)}
+.tccard-go{display:inline-flex;align-items:center;gap:.3rem;font-size:.82rem;font-weight:700;color:var(--emerald)}
+.tccard-go svg{width:15px;height:15px;transition:transform .25s}
+.tccard:hover .tccard-go svg{transform:translateX(3px)}
+
+/* detail hero */
+.tchero .dirhero-sub{max-width:720px}
+.tcbread{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;font-size:.82rem;margin-bottom:1.1rem;color:var(--gold-soft)}
+.tcbread a{color:var(--gold-soft);opacity:.85}.tcbread a:hover{opacity:1;text-decoration:underline}
+.tcbread b{color:#fff;font-weight:600}.tcbread span{opacity:.5}
+.tchero-cost{display:inline-flex;flex-direction:column;gap:.15rem;margin-top:1.4rem;background:rgba(255,255,255,.07);border:1px solid rgba(224,190,114,.3);border-left:3px solid var(--gold);border-radius:12px;padding:.8rem 1.2rem}
+.tchero-cost-l{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-soft)}
+.tchero-cost-v{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.9rem;color:#fff;line-height:1}
+
+/* detail layout */
+.tclayout{display:grid;grid-template-columns:1fr;gap:2.4rem}
+@media(min-width:960px){.tclayout{grid-template-columns:minmax(0,1fr) 330px;gap:3rem;align-items:start}}
+.tcmain{min-width:0}
+.tcblock{margin-bottom:2.4rem}
+.tcblock>h2{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.55rem;color:var(--emerald);margin:0 0 1rem}
+.tcblock>p{color:var(--ink-2);line-height:1.72}
+.tctable-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+.tctable{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff;min-width:420px}
+.tctable th,.tctable td{text-align:left;padding:.85rem 1.1rem;border-bottom:1px solid var(--line)}
+.tctable thead th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--ivory)}
+.tctable tbody tr:last-child td{border-bottom:none}
+.tctable td:first-child{font-weight:600;color:var(--ink)}
+.tctable-cost{font-weight:700;color:var(--gold-2);white-space:nowrap}
+.tcnote{margin:.9rem 0 0;font-size:.82rem;color:var(--ink-3);line-height:1.6}
+.tcfactors{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.tcfactors li{position:relative;padding-left:1.6rem;color:var(--ink-2);line-height:1.55}
+.tcfactors li::before{content:"";position:absolute;left:0;top:.5rem;width:8px;height:8px;border-radius:50%;background:var(--grad-gold)}
+.tctimeline{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tctime{background:var(--ivory);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem}
+.tctime-v{display:block;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.35rem;color:var(--emerald);line-height:1.15}
+.tctime-l{font-size:.8rem;color:var(--ink-3);font-weight:600}
+.tcincl{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.tcincl li{display:flex;align-items:center;gap:.7rem;color:var(--ink-2);font-weight:500}
+.tcincl .ck{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(26,95,87,.12);color:var(--emerald);display:grid;place-items:center}
+.tcincl .ck svg{width:14px;height:14px}
+.tcfaq.faqlist{margin:0;max-width:none;border-top:none}
+.tcfaq .faqi summary{font-size:1.18rem}
+.tcfaq .faqx{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--emerald);transition:all .3s}
+.tcfaq .faqx svg{width:16px;height:16px}
+.tcfaq .faqa{padding-left:.25rem}
+
+/* detail sidebar */
+.tcside{display:flex;flex-direction:column;gap:1.2rem}
+@media(min-width:960px){.tcside{position:sticky;top:100px}}
+.tccta-card{background:var(--emerald);color:var(--stone);border-radius:var(--r);padding:1.5rem}
+.tccta-card h3{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.5rem;color:#fff;margin:.35rem 0 .4rem}
+.tccta-card p{font-size:.9rem;color:var(--gold-soft);opacity:.9;margin:0 0 1.1rem;line-height:1.55}
+.tccta-card .btn{width:100%;justify-content:center}
+.tccta-wa{display:block;text-align:center;margin-top:.8rem;font-size:.84rem;font-weight:600;color:var(--gold-lite)}
+.tccta-wa:hover{text-decoration:underline}
+.tcfacts,.tcrel{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.4rem;box-shadow:var(--sh-sm)}
+.tcfacts h4,.tcrel h4{margin:0 0 .8rem;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.tcfacts dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.55rem 1rem}
+.tcfacts dt{font-size:.85rem;color:var(--ink-3)}
+.tcfacts dd{margin:0;font-size:.85rem;font-weight:600;color:var(--ink);text-align:right}
+.tcrel a{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.88rem;font-weight:600;color:var(--emerald)}
+.tcrel a:last-child{border-bottom:none}
+.tcrel a:hover{color:var(--gold-2)}
+.tcrel-c{font-size:.8rem;font-weight:700;color:var(--gold-2);white-space:nowrap}
+@media(max-width:520px){.tctimeline{grid-template-columns:1fr}}
+
+/* Treatment Cost mega-menu footer link */
+.mega .mega-all{display:block;text-align:center;margin-top:.5rem;padding:.7rem;border-top:1px solid var(--line);font-size:.82rem;font-weight:700;color:var(--gold-2)}
+.mega .mega-all:hover{background:var(--stone);color:var(--emerald);padding-left:.7rem}

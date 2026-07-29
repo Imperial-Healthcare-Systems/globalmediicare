@@ -218,8 +218,9 @@ function initEnquiry() {
   function close() { m.classList.remove("open"); m.setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
   function open(opts) {
     current = opts;
-    title.textContent = opts.kind === "doctor" ? "Free Medical Opinion" : "Get a Free Quote";
-    sel.innerHTML = '<span class="qmsel-k">' + (opts.kind === "doctor" ? "Doctor" : "Hospital") + "</span>" +
+    title.textContent = opts.kind === "doctor" ? "Free Medical Opinion" : opts.kind === "treatment" ? "Get a Free Cost Estimate" : "Get a Free Quote";
+    var selKind = opts.kind === "doctor" ? "Doctor" : opts.kind === "treatment" ? "Treatment" : "Hospital";
+    sel.innerHTML = '<span class="qmsel-k">' + selKind + "</span>" +
       "<b>" + esc(opts.label) + "</b>" + (opts.subLabel ? '<span class="qmsel-s">' + esc(opts.subLabel) + "</span>" : "");
     form.hidden = false; succ.hidden = true; err.hidden = true;
     btn.disabled = false; btn.textContent = "Request Quote";
@@ -266,6 +267,8 @@ function initEnquiry() {
     } else if (b.dataset.q === "doctor") {
       var subBits = [b.dataset.qspec, b.dataset.qhosp, b.dataset.qloc].filter(Boolean).join(" · ");
       open({ kind: "doctor", label: b.dataset.qname, subLabel: subBits, destination: b.dataset.qhosp, treatment: b.dataset.qspec });
+    } else if (b.dataset.q === "treatment") {
+      open({ kind: "treatment", label: b.dataset.qname, subLabel: "Free, itemised estimate in 48 hours", treatment: b.dataset.qname });
     }
   });
 }

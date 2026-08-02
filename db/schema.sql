@@ -88,19 +88,19 @@ create policy "doctors_write" on public.doctors for all
 -- ----------------------------------------------------------------------------
 insert into public.hospitals (name, city, country, image_url, accreditation, beds, established, specialties, sort_order)
 select * from (values
-  ('Medanta - The Medicity','Gurgaon','in','https://en.wikipedia.org/wiki/Special:FilePath/Medanta_the_medicity_hospital.jpg', array['JCI','NABH'], 1250, 2009, array['Cardiology','Oncology','Neurosurgery','Organ Transplant'], 1),
-  ('Indraprastha Apollo','New Delhi','in','https://commons.wikimedia.org/wiki/Special:FilePath/Apollo_Hospital_Indraprastha.jpg', array['JCI','NABH'], 710, 1996, array['Oncology','Cardiology','Orthopedics','Organ Transplant'], 2),
-  ('Kokilaben Dhirubhai Ambani','Mumbai','in','https://commons.wikimedia.org/wiki/Special:FilePath/Lilavati_Hospital,_Bandra.jpg', array['NABH','NABL'], 750, 2009, array['Neurosurgery','Oncology','Cardiology','IVF & Fertility'], 3),
-  ('Apollo Hospitals','Chennai','in','https://commons.wikimedia.org/wiki/Special:FilePath/Apollo_Enterns_001.jpg', array['JCI','NABH'], 560, 1983, array['Cardiology','Orthopedics','IVF & Fertility','Bariatric'], 4),
-  ('Erdem Hospital','Istanbul','tr','https://erdemhospital.com/wp-content/uploads/2023/05/gunesli-erdem-hospital-520x347.webp', array['ISO'], 200, 1988, array['Bariatric','Cosmetic & Hair','Orthopedics','Cardiology'], 5),
-  ('Burjeel Hospital','Abu Dhabi','ae','https://commons.wikimedia.org/wiki/Special:FilePath/Shaikh_Khalifa_Medical_City.jpg', array['JCI','ISO'], 400, 2012, array['Orthopedics','Cardiology','Oncology','Cosmetic & Hair'], 7),
-  ('Saudi German Hospital','Dubai','ae','https://commons.wikimedia.org/wiki/Special:FilePath/Iranian_Hospital,_Dubai.jpg', array['JCI'], 300, 2012, array['Gynecology','Orthopedics','Bariatric','Cardiology'], 8),
-  ('Bumrungrad International','Bangkok','th','https://commons.wikimedia.org/wiki/Special:FilePath/Thailand_Bangkok_Bumrungrad_International_Hospital_entrance-building.jpg', array['JCI','GHA'], 580, 1980, array['Bariatric','Oncology','Cardiology','Orthopedics'], 9),
-  ('Bangkok Hospital','Bangkok','th','https://commons.wikimedia.org/wiki/Special:FilePath/Bangkok_hospital_building01.jpg', array['JCI','GHA'], 650, 1972, array['Cardiology','Cosmetic & Hair','Neurosurgery','Oncology'], 10),
-  ('Charité','Berlin','de','https://commons.wikimedia.org/wiki/Special:FilePath/2016_Charite_Hospital.jpg', array['ISO'], 3000, 1710, array['Spine Surgery','Oncology','Neurosurgery','Organ Transplant'], 11),
-  ('Heidelberg University Hospital','Heidelberg','de','https://commons.wikimedia.org/wiki/Special:FilePath/Neue_Chirurgische_Klinik_Heidelberg.jpg', array['ISO'], 1900, 1388, array['Organ Transplant','Oncology','Cardiology','Spine Surgery'], 12),
-  ('As-Salam International','Cairo','eg','https://commons.wikimedia.org/wiki/Special:FilePath/New_Cairo_hospital.jpg', array['ISO'], 350, 1982, array['Cardiology','Oncology','Orthopedics','Gynecology'], 13),
-  ('Cleopatra Hospital','Cairo','eg','https://commons.wikimedia.org/wiki/Special:FilePath/Cairouniversityhospital.JPG', array['ISO'], 220, 1979, array['Gynecology','Cardiology','IVF & Fertility','Bariatric'], 14)
+  ('Medanta - The Medicity','Gurgaon','in','/assets/hospitals/medanta-the-medicity.jpg', array['JCI','NABH'], 1250, 2009, array['Cardiology','Oncology','Neurosurgery','Organ Transplant'], 1),
+  ('Indraprastha Apollo','New Delhi','in','/assets/hospitals/indraprastha-apollo.jpg', array['JCI','NABH'], 710, 1996, array['Oncology','Cardiology','Orthopedics','Organ Transplant'], 2),
+  ('Kokilaben Dhirubhai Ambani','Mumbai','in','/assets/hospitals/kokilaben-dhirubhai-ambani.jpg', array['NABH','NABL'], 750, 2009, array['Neurosurgery','Oncology','Cardiology','IVF & Fertility'], 3),
+  ('Apollo Hospitals','Chennai','in','/assets/hospitals/apollo-hospitals.jpg', array['JCI','NABH'], 560, 1983, array['Cardiology','Orthopedics','IVF & Fertility','Bariatric'], 4),
+  ('Erdem Hospital','Istanbul','tr','/assets/hospitals/erdem-hospital.webp', array['ISO'], 200, 1988, array['Bariatric','Cosmetic & Hair','Orthopedics','Cardiology'], 5),
+  ('Burjeel Hospital','Abu Dhabi','ae','/assets/hospitals/burjeel-hospital.jpg', array['JCI','ISO'], 400, 2012, array['Orthopedics','Cardiology','Oncology','Cosmetic & Hair'], 7),
+  ('Saudi German Hospital','Dubai','ae','/assets/hospitals/saudi-german-hospital.jpg', array['JCI'], 300, 2012, array['Gynecology','Orthopedics','Bariatric','Cardiology'], 8),
+  ('Bumrungrad International','Bangkok','th','/assets/hospitals/bumrungrad-international.jpg', array['JCI','GHA'], 580, 1980, array['Bariatric','Oncology','Cardiology','Orthopedics'], 9),
+  ('Bangkok Hospital','Bangkok','th','/assets/hospitals/bangkok-hospital.jpg', array['JCI','GHA'], 650, 1972, array['Cardiology','Cosmetic & Hair','Neurosurgery','Oncology'], 10),
+  ('Charité','Berlin','de','/assets/hospitals/charite.jpg', array['ISO'], 3000, 1710, array['Spine Surgery','Oncology','Neurosurgery','Organ Transplant'], 11),
+  ('Heidelberg University Hospital','Heidelberg','de','/assets/hospitals/heidelberg-university-hospital.jpg', array['ISO'], 1900, 1388, array['Organ Transplant','Oncology','Cardiology','Spine Surgery'], 12),
+  ('As-Salam International','Cairo','eg','/assets/hospitals/as-salam-international.jpg', array['ISO'], 350, 1982, array['Cardiology','Oncology','Orthopedics','Gynecology'], 13),
+  ('Cleopatra Hospital','Cairo','eg','/assets/hospitals/cleopatra-hospital.jpg', array['ISO'], 220, 1979, array['Gynecology','Cardiology','IVF & Fertility','Bariatric'], 14)
 ) as v(name, city, country, image_url, accreditation, beds, established, specialties, sort_order)
 where not exists (select 1 from public.hospitals);
 

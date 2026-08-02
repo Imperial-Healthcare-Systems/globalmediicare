@@ -37,16 +37,21 @@ Generated files (`app/globals.css`, `content/body.html`, `public/engine.js`,
 
 ## Develop
 
+> **Package manager: pnpm.** This project uses pnpm (see `pnpm-lock.yaml`) and
+> deploys with `pnpm install --frozen-lockfile`. Always change dependencies with
+> `pnpm add <pkg>` / `pnpm install` — never `npm install`, which writes a
+> conflicting `package-lock.json` and breaks the deploy's frozen install.
+
 ```bash
-npm install
-npm run build:content   # regenerate from ../globalmedicare.html (already run)
-npm run dev             # http://localhost:3000
+pnpm install
+pnpm run build:content   # regenerate from ../globalmedicare.html (already run)
+pnpm run dev             # http://localhost:3000
 ```
 
 ## Build
 
 ```bash
-npm run build && npm start
+pnpm run build && pnpm start
 ```
 
 ## Doctors & Hospitals — pages + admin panel

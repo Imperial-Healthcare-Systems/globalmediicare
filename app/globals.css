@@ -1133,3 +1133,7 @@ ul{list-style:none}button{font-family:inherit}
 /* Treatment Cost mega-menu footer link */
 .mega .mega-all{display:block;text-align:center;margin-top:.5rem;padding:.7rem;border-top:1px solid var(--line);font-size:.82rem;font-weight:700;color:var(--gold-2)}
 .mega .mega-all:hover{background:var(--stone);color:var(--emerald);padding-left:.7rem}
+
+/* Footer Google-map embed */
+.ft-map{margin-top:1rem;border-radius:12px;overflow:hidden;border:1px solid var(--line-em);line-height:0;box-shadow:0 10px 30px -18px rgba(0,0,0,.5)}
+.ft-map iframe{display:block;width:100%;filter:grayscale(.2)}

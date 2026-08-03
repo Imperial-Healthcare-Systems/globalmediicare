@@ -1140,3 +1140,11 @@ ul{list-style:none}button{font-family:inherit}
 /* Footer Google-map embed */
 .ft-map{margin-top:1rem;border-radius:12px;overflow:hidden;border:1px solid var(--line-em);line-height:0;box-shadow:0 10px 30px -18px rgba(0,0,0,.5)}
 .ft-map iframe{display:block;width:100%;filter:grayscale(.2)}
+
+/* Admin image upload control */
+.adm-imgrow{display:flex;align-items:center;gap:1rem;margin-bottom:.5rem}
+.adm-imgprev{width:88px;height:66px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--stone);flex-shrink:0}
+.adm-imgph{width:88px;height:66px;display:grid;place-items:center;border-radius:10px;border:1px dashed var(--line);color:var(--ink-3);font-size:.72rem;background:var(--ivory);flex-shrink:0}
+.adm-imgctl{display:flex;gap:.5rem;flex-wrap:wrap}
+.adm-uplbl{display:inline-flex;align-items:center;cursor:pointer;margin:0}
+.adm-uplbl.busy{opacity:.6;pointer-events:none}

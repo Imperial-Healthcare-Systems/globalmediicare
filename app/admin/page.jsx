@@ -21,7 +21,7 @@ const SCHEMA = {
       { k: "hospital", l: "Hospital", t: "text" },
       { k: "city", l: "City", t: "text" },
       { k: "country", l: "Country", t: "select" },
-      { k: "photo_url", l: "Photo URL (optional)", t: "text", full: true, hint: "Leave blank to show initials avatar." },
+      { k: "photo_url", l: "Photo (optional)", t: "image", full: true, hint: "Upload an image or paste a URL. Leave blank to show an initials avatar." },
       { k: "sort_order", l: "Sort order", t: "number" },
       { k: "is_active", l: "Visible on site", t: "checkbox" },
     ],
@@ -33,7 +33,7 @@ const SCHEMA = {
       { k: "name", l: "Hospital name", t: "text", full: true, req: true },
       { k: "city", l: "City", t: "text" },
       { k: "country", l: "Country", t: "select" },
-      { k: "image_url", l: "Image URL", t: "text", full: true, hint: "Direct link to a hospital photo (jpg/png)." },
+      { k: "image_url", l: "Hospital image", t: "image", full: true, hint: "Upload a hospital photo or paste a direct image URL." },
       { k: "accreditation", l: "Accreditation", t: "array", ph: "JCI, NABH", hint: "Comma-separated." },
       { k: "specialties", l: "Specialties", t: "array", ph: "Cardiology, Oncology", hint: "Comma-separated.", full: true },
       { k: "beds", l: "Beds", t: "number" },
@@ -213,6 +213,29 @@ function Editor({ tab, record, setRecord, onClose, onSave, saving }) {
   const fields = SCHEMA[tab].fields;
   const set = (k, val) => setRecord((r) => ({ ...r, [k]: val }));
   const isNew = !record.id;
+  const [uploading, setUploading] = useState("");
+  const [upErr, setUpErr] = useState("");
+
+  async function handleFile(fieldKey, file) {
+    if (!file) return;
+    setUpErr("");
+    if (!file.type.startsWith("image/")) { setUpErr("Please choose an image file."); return; }
+    if (file.size > 8 * 1024 * 1024) { setUpErr("Image is larger than 8 MB — please use a smaller file."); return; }
+    setUploading(fieldKey);
+    try {
+      const sb = getSupabase();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const path = `${tab}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await sb.storage.from("media").upload(path, file, { upsert: true, contentType: file.type, cacheControl: "31536000" });
+      if (error) throw error;
+      const { data } = sb.storage.from("media").getPublicUrl(path);
+      set(fieldKey, data.publicUrl);
+    } catch (e) {
+      setUpErr((e?.message || "Upload failed") + " — ensure the 'media' storage bucket exists (run db/storage.sql).");
+    } finally {
+      setUploading("");
+    }
+  }
   return (
     <div className="adm-ov" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="adm-modal">
@@ -227,6 +250,25 @@ function Editor({ tab, record, setRecord, onClose, onSave, saving }) {
               <div key={f.k} className="adm-field adm-check full">
                 <input id={f.k} type="checkbox" checked={!!val} onChange={(e) => set(f.k, e.target.checked)} />
                 <label htmlFor={f.k} style={{ textTransform: "none", letterSpacing: 0, fontSize: ".9rem" }}>{f.l}</label>
+              </div>
+            );
+            if (f.t === "image") return (
+              <div key={f.k} className="adm-field full">
+                <label htmlFor={f.k}>{f.l}</label>
+                <div className="adm-imgrow">
+                  {val ? <img className="adm-imgprev" src={val} alt="" /> : <span className="adm-imgph">No image</span>}
+                  <div className="adm-imgctl">
+                    <label className={"adm-btn ghost adm-uplbl" + (uploading === f.k ? " busy" : "")}>
+                      {uploading === f.k ? "Uploading…" : val ? "Replace image" : "Upload image"}
+                      <input type="file" accept="image/*" hidden disabled={uploading === f.k}
+                        onChange={(e) => { handleFile(f.k, e.target.files[0]); e.target.value = ""; }} />
+                    </label>
+                    {val ? <button type="button" className="adm-btn danger" onClick={() => set(f.k, "")}>Remove</button> : null}
+                  </div>
+                </div>
+                <input id={f.k} type="text" placeholder="…or paste an image URL" value={val ?? ""} onChange={(e) => set(f.k, e.target.value)} />
+                {upErr && <span className="hint" style={{ color: "#b23b3b" }}>{upErr}</span>}
+                {f.hint && <span className="hint">{f.hint}</span>}
               </div>
             );
             return (

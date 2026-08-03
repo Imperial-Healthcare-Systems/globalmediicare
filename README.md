@@ -72,6 +72,8 @@ before any backend is wired. Content is managed from the **`/admin`** panel
    ```
 3. Open the Supabase **SQL editor** and run **`db/schema.sql`** (creates the
    `doctors` + `hospitals` tables, RLS policies, and seeds the sample rows).
+   Also run **`db/storage.sql`** once — it creates the public `media` storage
+   bucket + policies that power the "Upload image" button in the admin panel.
 4. Under **Authentication → Users**, add an admin user (email + password). Any
    signed-in user can edit content (RLS allows authenticated writes only).
 5. Restart the dev/prod server. Visit `/admin`, sign in, and manage listings —

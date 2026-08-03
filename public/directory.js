@@ -54,6 +54,18 @@ function fetchJson(url) {
     return r.json();
   });
 }
+// Prefill inputs/selects from URL query params (e.g. /hospitals?q=Medanta,
+// /doctors?spec=Cardiology) so the home search lands pre-filtered.
+function applyQueryPrefill(map) {
+  var p = new URLSearchParams(location.search);
+  Object.keys(map).forEach(function (key) {
+    var el = map[key], val = p.get(key);
+    if (!el || !val) return;
+    if (el.tagName === "SELECT") {
+      if ([].some.call(el.options, function (o) { return o.value === val; })) el.value = val;
+    } else { el.value = val; }
+  });
+}
 
 /* ===== DOCTORS PAGE ===== */
 function initDoctors() {
@@ -111,6 +123,7 @@ function initDoctors() {
     DATA = (j.doctors || []).filter(Boolean);
     fillSelect(fSpec, uniq(DATA.map(function (d) { return d.specialty; })).sort().map(function (s) { return { val: s, label: s }; }));
     fillSelect(fCountry, uniq(DATA.map(function (d) { return d.country; })).map(function (c) { return { val: c, label: cname(c) }; }));
+    applyQueryPrefill({ q: search, spec: fSpec, country: fCountry });
     render();
   }).catch(function () { count.textContent = "Could not load doctors. Please refresh."; });
 }
@@ -174,6 +187,7 @@ function initHospitals() {
     fillSelect(hCountry, uniq(DATA.map(function (h) { return h.country; })).map(function (c) { return { val: c, label: cname(c) }; }));
     fillSelect(hSpec, uniq([].concat.apply([], DATA.map(function (h) { return arr(h.specialties); }))).sort().map(function (s) { return { val: s, label: s }; }));
     fillSelect(hAccred, uniq([].concat.apply([], DATA.map(function (h) { return arr(h.accreditation); }))).sort().map(function (a) { return { val: a, label: a }; }));
+    applyQueryPrefill({ q: search, country: hCountry, spec: hSpec, accred: hAccred });
     render();
   }).catch(function () { count.textContent = "Could not load hospitals. Please refresh."; });
 }

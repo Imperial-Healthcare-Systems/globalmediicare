@@ -171,35 +171,61 @@ fill('faqList',FAQ.map((f,i)=>`
   </details>`).join(''));
 
 /* ===== § SUGGESTIVE SEARCH =====
-   Front-end only: matches against a static local index. No backend, no API.
-   Each entry's `href` is filled in when the sub-pages ship — until then a
-   selection is inert and simply reflects into the field. */
+   Live index: hospitals + doctors are pulled from /api/hospitals and
+   /api/doctors (Supabase-backed); treatments/specialties are static. Selecting
+   a result navigates to the right page — hospitals to the filtered /hospitals
+   listing, treatments to their /treatment-cost/<slug> page, doctors to the
+   filtered /doctors listing. Enter / Search goes to the top match. */
 (function(){
   const input=document.getElementById('sInput'),panel=document.getElementById('sPanel'),
         box=document.getElementById('sbox'),chips=document.getElementById('sChips'),go=document.getElementById('sGo');
   if(!input)return;
+  const enc=encodeURIComponent;
+  const initials=s=>String(s).replace(/^Dr\.?\s+/i,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 
-  const INDEX=[
-    ...HOSPITALS.map(h=>({t:'Hospital',label:h[0],sub:h[1],mono:h[3],key:h[0]+' '+h[1]})),
-    ...specialties.map(s=>({t:'Treatment',label:s[0].replace(/&amp;/g,'&'),sub:s[1].replace(/&amp;/g,'&'),icon:s[2],key:s[0]+' '+s[1]})),
-    ...['Knee Replacement','Hip Replacement','Angioplasty','Bypass Surgery','Spinal Fusion','Brain Tumor Surgery','Bone Marrow Transplant','Liver Transplant','Kidney Transplant','IVF','Hair Transplant','Bariatric Surgery','Cataract Surgery','Health Check-up']
-      .map(t=>({t:'Treatment',label:t,sub:'Procedure',key:t}))
+  /* static: treatment cost pages [label, slug, extra search terms] */
+  const TREATMENTS=[
+    ['Bone Marrow Transplant','bone-marrow-transplant','BMT'],['Chemotherapy','chemotherapy',''],
+    ['Cancer Surgery','cancer-surgery','oncosurgery tumour'],['Coronary Bypass (CABG)','coronary-bypass-cabg','CABG heart bypass'],
+    ['Heart Valve Replacement','heart-valve-replacement','valve TAVR'],['Angioplasty (Stent)','angioplasty-stent','stent PCI'],
+    ['Liver Transplant','liver-transplant',''],['Kidney Transplant','kidney-transplant',''],
+    ['Knee Replacement','knee-replacement','arthroplasty'],['Hip Replacement','hip-replacement','arthroplasty'],
+    ['Spinal Fusion Surgery','spinal-fusion','spine'],['Knee Arthroscopy','knee-arthroscopy','ACL meniscus'],
+    ['Brain Tumour Surgery','brain-tumor-surgery','brain tumor craniotomy'],['Stereotactic Radiosurgery','stereotactic-radiosurgery','gamma knife cyberknife'],
+    ['Spinal Decompression','spinal-decompression','discectomy'],['IVF','ivf','fertility in vitro icsi'],
+    ['Bariatric Surgery','bariatric-surgery','weight loss gastric sleeve bypass'],['Hair Transplant','hair-transplant','FUE FUT']
   ];
-  const POPULAR=['Cardiology','Knee Replacement','Oncology','IVF','Apollo','Medanta'];
-  const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  const mark=(s,q)=>q?s.replace(new RegExp('('+esc(q)+')','ig'),'<mark>$1</mark>'):s;
+  let INDEX=[
+    ...TREATMENTS.map(t=>({t:'Treatment',label:t[0],sub:'Treatment cost',href:'/treatment-cost/'+t[1],key:(t[0]+' '+t[2]).toLowerCase()})),
+    ...specialties.map(s=>{const n=s[0].replace(/&amp;/g,'&');return{t:'Specialty',label:n,sub:'Find specialists',icon:s[2],href:'/doctors?spec='+enc(n),key:n.toLowerCase()};})
+  ];
+  /* live: hospitals + doctors from the API */
+  const COUNTRY={in:'India',tr:'Turkey',ae:'UAE',th:'Thailand',de:'Germany',eg:'Egypt'};
+  const add=arr=>{INDEX=INDEX.concat(arr);if(input.value.trim())render(input.value);};
+  fetch('/api/hospitals').then(r=>r.json()).then(j=>add((j.hospitals||[]).map(h=>({
+    t:'Hospital',label:h.name,sub:[h.city,COUNTRY[h.country]||h.country].filter(Boolean).join(', '),
+    mono:initials(h.name),href:'/hospitals?q='+enc(h.name),key:(h.name+' '+(h.city||'')+' '+(h.country||'')).toLowerCase()
+  })))).catch(()=>{});
+  fetch('/api/doctors').then(r=>r.json()).then(j=>add((j.doctors||[]).map(d=>({
+    t:'Doctor',label:d.name,sub:[d.specialty,d.hospital].filter(Boolean).join(' · '),
+    mono:initials(d.name),href:'/doctors?q='+enc(d.name),key:(d.name+' '+(d.specialty||'')+' '+(d.hospital||'')).toLowerCase()
+  })))).catch(()=>{});
 
+  /* [label, href] — each chip jumps straight to the right page */
+  const POPULAR=[['Cardiology','/doctors?spec=Cardiology'],['Knee Replacement','/treatment-cost/knee-replacement'],
+    ['Oncology','/doctors?spec=Oncology'],['IVF','/treatment-cost/ivf'],['Apollo','/hospitals?q=Apollo'],['Medanta','/hospitals?q=Medanta']];
+  const rxesc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const mark=(s,q)=>q?s.replace(new RegExp('('+rxesc(q)+')','ig'),'<mark>$1</mark>'):s;
   const thumb=r=>r.mono
     ? `<span class="sthumb mono">${r.mono}</span>`
     : `<span class="sthumb ico">${r.icon?ic(r.icon):'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>'}</span>`;
 
   let items=[],cur=-1;
-
   function render(q){
     const query=q.trim();
-    if(!query){panel.classList.remove('open');input.setAttribute('aria-expanded','false');return}
+    if(!query){close();return}
     const lc=query.toLowerCase();
-    const hits=INDEX.filter(r=>r.key.toLowerCase().includes(lc)).slice(0,8);
+    const hits=INDEX.filter(r=>r.key.includes(lc)).slice(0,8);
     if(!hits.length){
       panel.innerHTML=`<div class="sempty">No match for “${query}”. <a href="#consult">Ask our care team →</a></div>`;
       items=[];cur=-1;
@@ -207,33 +233,32 @@ fill('faqList',FAQ.map((f,i)=>`
       const groups={};hits.forEach(r=>(groups[r.t]=groups[r.t]||[]).push(r));
       panel.innerHTML=Object.keys(groups).map(g=>`
         <div class="sgroup"><div class="sgroup-h">${g}s</div>${groups[g].map(r=>`
-          <button type="button" class="srow" role="option" data-label="${r.label}">
+          <a href="${r.href}" class="srow" role="option">
             ${thumb(r)}
             <span class="srow-t"><b>${mark(r.label,query)}</b><span>${r.sub||''}</span></span>
             <span class="stype">${r.t}</span>
-          </button>`).join('')}</div>`).join('')
-        +`<div class="snote">Doctor profiles are being added — search hospitals and treatments for now.</div>`;
+          </a>`).join('')}</div>`).join('');
       items=[...panel.querySelectorAll('.srow')];cur=-1;
     }
     panel.classList.add('open');input.setAttribute('aria-expanded','true');
   }
   function close(){panel.classList.remove('open');input.setAttribute('aria-expanded','false');cur=-1}
   function hi(){items.forEach((el,i)=>el.classList.toggle('on',i===cur));if(items[cur])items[cur].scrollIntoView({block:'nearest'})}
+  function submit(){const q=input.value.trim();if(!q)return;if(items[0]){location.href=items[0].getAttribute('href');return}location.href='/hospitals?q='+enc(q)}
 
-  chips.innerHTML=POPULAR.map(p=>`<button type="button" class="schip">${p}</button>`).join('');
-  chips.addEventListener('click',e=>{const c=e.target.closest('.schip');if(!c)return;input.value=c.textContent;input.focus();render(input.value)});
+  chips.innerHTML=POPULAR.map(p=>`<button type="button" class="schip" data-href="${p[1]}">${p[0]}</button>`).join('');
+  chips.addEventListener('click',e=>{const c=e.target.closest('.schip');if(c)location.href=c.dataset.href});
 
   input.addEventListener('input',()=>render(input.value));
   input.addEventListener('focus',()=>{if(input.value.trim())render(input.value)});
   input.addEventListener('keydown',e=>{
     if(e.key==='Escape')return close();
+    if(e.key==='Enter'){e.preventDefault();if(cur>-1&&items[cur])location.href=items[cur].getAttribute('href');else submit();return}
     if(!items.length)return;
     if(e.key==='ArrowDown'){e.preventDefault();cur=(cur+1)%items.length;hi()}
     else if(e.key==='ArrowUp'){e.preventDefault();cur=(cur-1+items.length)%items.length;hi()}
-    else if(e.key==='Enter'&&cur>-1){e.preventDefault();items[cur].click()}
   });
-  panel.addEventListener('click',e=>{const r=e.target.closest('.srow');if(!r)return;input.value=r.dataset.label;close()});
-  go.addEventListener('click',()=>{input.focus();render(input.value)});
+  go.addEventListener('click',submit);
   document.addEventListener('click',e=>{if(!box.contains(e.target))close()});
 })();
 

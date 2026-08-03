@@ -1033,6 +1033,9 @@ ul{list-style:none}button{font-family:inherit}
 .qmsel b{font-size:1.02rem;color:var(--emerald);font-weight:700}
 .qmsel-s{font-size:.82rem;color:var(--ink-2)}
 .qmform{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+/* `display:grid`/block above would otherwise override the [hidden] attribute,
+   leaving the form (and its "Sending…" button) visible after submit. */
+.qmform[hidden],.qmsucc[hidden]{display:none}
 .qmf{display:flex;flex-direction:column;gap:.3rem}
 .qmf.full{grid-column:1/-1}
 .qmf label{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}

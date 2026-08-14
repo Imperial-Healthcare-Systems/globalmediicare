@@ -12,6 +12,7 @@ const COUNTRIES = [
 const SCHEMA = {
   doctors: {
     label: "Doctors",
+    singular: "Doctor",
     columns: ["name", "specialty", "hospital", "country", "experience"],
     fields: [
       { k: "name", l: "Full name", t: "text", full: true, req: true },
@@ -28,6 +29,7 @@ const SCHEMA = {
   },
   hospitals: {
     label: "Hospitals",
+    singular: "Hospital",
     columns: ["name", "city", "country", "accreditation", "beds"],
     fields: [
       { k: "name", l: "Hospital name", t: "text", full: true, req: true },
@@ -42,9 +44,32 @@ const SCHEMA = {
       { k: "is_active", l: "Visible on site", t: "checkbox" },
     ],
   },
+  posts: {
+    label: "News & Blogs",
+    singular: "Post",
+    columns: ["title", "category", "author", "published_at", "published"],
+    fields: [
+      { k: "title", l: "Title", t: "text", full: true, req: true },
+      { k: "slug", l: "URL slug", t: "text", ph: "auto-generated-from-title", hint: "Leave blank to auto-generate from the title. The article lives at /news/<slug>." },
+      { k: "category", l: "Category", t: "select", opts: [{ v: "News", l: "News" }, { v: "Blog", l: "Blog" }, { v: "Guide", l: "Guide" }, { v: "Patient Story", l: "Patient Story" }] },
+      { k: "author", l: "Author", t: "text", ph: "Globalmediicare" },
+      { k: "published_at", l: "Publish date", t: "date", hint: "Defaults to today if left blank." },
+      { k: "cover_url", l: "Cover image (optional)", t: "image", full: true, hint: "Upload a cover image or paste a URL. A branded placeholder shows if left blank." },
+      { k: "excerpt", l: "Excerpt / summary", t: "textarea", full: true, rows: 2, hint: "One or two sentences — shown on cards and used as the search-engine description." },
+      { k: "body", l: "Article body (Markdown)", t: "textarea", full: true, rows: 14, hint: "Markdown supported: ## Heading, **bold**, *italic*, - bullet lists, > quote, [link](url), ![image](url). Leave a blank line between paragraphs." },
+      { k: "tags", l: "Tags", t: "array", ph: "travel, oncology", hint: "Comma-separated." },
+      { k: "sort_order", l: "Sort order", t: "number" },
+      { k: "published", l: "Published (visible on site)", t: "checkbox" },
+    ],
+  },
 };
 
-const ARRAY_KEYS = { doctors: [], hospitals: ["accreditation", "specialties"] };
+const ARRAY_KEYS = { doctors: [], hospitals: ["accreditation", "specialties"], posts: ["tags"] };
+
+function slugify(s) {
+  return String(s || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+}
 
 function blankRecord(tab) {
   const r = {};
@@ -78,8 +103,11 @@ export default function AdminPage() {
     const sb = getSupabase();
     if (!sb) return;
     setLoadingRows(true);
-    const { data, error } = await sb.from(which).select("*")
-      .order("sort_order", { ascending: true }).order("name", { ascending: true });
+    let q = sb.from(which).select("*").order("sort_order", { ascending: true });
+    q = which === "posts"
+      ? q.order("published_at", { ascending: false })
+      : q.order("name", { ascending: true });
+    const { data, error } = await q;
     setLoadingRows(false);
     if (error) { setNote({ kind: "err", msg: error.message }); return; }
     setRows(data || []);
@@ -110,6 +138,12 @@ export default function AdminPage() {
       }
       if (f.t === "array") payload[f.k] = toArray(payload[f.k]);
     });
+    // posts: derive slug from title when blank; let the DB default the publish date
+    if (tab === "posts") {
+      payload.slug = slugify(payload.slug || payload.title);
+      if (!payload.slug) { setSaving(false); setNote({ kind: "err", msg: "Please enter a title." }); return; }
+      if (payload.published_at === "" || payload.published_at == null) delete payload.published_at;
+    }
     let res;
     if (payload.id) res = await sb.from(tab).update(payload).eq("id", payload.id);
     else { delete payload.id; res = await sb.from(tab).insert(payload); }
@@ -121,7 +155,8 @@ export default function AdminPage() {
   }
 
   async function remove(row) {
-    if (!window.confirm("Delete “" + row.name + "”? This cannot be undone.")) return;
+    const label = row.title || row.name || "this record";
+    if (!window.confirm("Delete “" + label + "”? This cannot be undone.")) return;
     const { error } = await getSupabase().from(tab).delete().eq("id", row.id);
     if (error) { setNote({ kind: "err", msg: error.message }); return; }
     setNote({ kind: "ok", msg: "Deleted." });
@@ -159,7 +194,7 @@ export default function AdminPage() {
           <h2>{schema.label}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <span className="adm-count">{rows.length} record{rows.length === 1 ? "" : "s"}</span>
-            <button className="adm-btn primary" onClick={() => openEdit(blankRecord(tab))}>+ Add {schema.label.slice(0, -1)}</button>
+            <button className="adm-btn primary" onClick={() => openEdit(blankRecord(tab))}>+ Add {schema.singular || schema.label.slice(0, -1)}</button>
           </div>
         </div>
 
@@ -175,7 +210,7 @@ export default function AdminPage() {
                 <tr><td colSpan={schema.columns.length + 1} className="adm-empty">No records yet. Click “Add” to create one.</td></tr>
               ) : rows.map((row) => (
                 <tr key={row.id} style={{ opacity: row.is_active ? 1 : 0.5 }}>
-                  {schema.columns.map((c) => <td key={c} className={c === "name" ? "adm-name" : ""}>{cell(row[c], c)}</td>)}
+                  {schema.columns.map((c) => <td key={c} className={(c === "name" || c === "title") ? "adm-name" : ""}>{cell(row[c], c)}</td>)}
                   <td>
                     <div className="adm-rowbtns">
                       <button className="adm-btn ghost" onClick={() => openEdit(row)}>Edit</button>
@@ -200,8 +235,13 @@ export default function AdminPage() {
 }
 
 function cell(v, c) {
+  if (typeof v === "boolean") return v ? "Yes" : "No";
   if (Array.isArray(v)) return v.map((x, i) => <span key={i} className="adm-pill">{x}</span>);
   if (c === "country") { const m = COUNTRIES.find((x) => x.v === v); return m ? m.l : v; }
+  if (/_at$/.test(c) && v) {
+    const d = new Date(v);
+    if (!isNaN(d)) return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
   return v == null || v === "" ? "—" : String(v);
 }
 function toArray(v) {
@@ -240,7 +280,7 @@ function Editor({ tab, record, setRecord, onClose, onSave, saving }) {
     <div className="adm-ov" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="adm-modal">
         <div className="adm-modal-h">
-          <h3>{isNew ? "Add" : "Edit"} {SCHEMA[tab].label.slice(0, -1)}</h3>
+          <h3>{isNew ? "Add" : "Edit"} {SCHEMA[tab].singular || SCHEMA[tab].label.slice(0, -1)}</h3>
           <button className="adm-x" onClick={onClose} aria-label="Close">×</button>
         </div>
         <form className="adm-form" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
@@ -274,18 +314,21 @@ function Editor({ tab, record, setRecord, onClose, onSave, saving }) {
             return (
               <div key={f.k} className={"adm-field" + (f.full ? " full" : "")}>
                 <label htmlFor={f.k}>{f.l}{f.req ? " *" : ""}</label>
-                {f.t === "select" ? (
+                {f.t === "textarea" ? (
+                  <textarea id={f.k} rows={f.rows || 4} required={f.req} placeholder={f.ph || ""}
+                    value={val ?? ""} onChange={(e) => set(f.k, e.target.value)} />
+                ) : f.t === "select" ? (
                   <select id={f.k} value={val || ""} onChange={(e) => set(f.k, e.target.value)}>
                     <option value="">—</option>
-                    {COUNTRIES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
+                    {(f.opts || COUNTRIES).map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
                   </select>
                 ) : (
                   <input
                     id={f.k}
-                    type={f.t === "number" ? "number" : "text"}
+                    type={f.t === "number" ? "number" : f.t === "date" ? "date" : "text"}
                     required={f.req}
                     placeholder={f.ph || ""}
-                    value={f.t === "array" ? (Array.isArray(val) ? val.join(", ") : val || "") : (val ?? "")}
+                    value={f.t === "date" ? String(val || "").slice(0, 10) : f.t === "array" ? (Array.isArray(val) ? val.join(", ") : val || "") : (val ?? "")}
                     onChange={(e) => set(f.k, e.target.value)}
                   />
                 )}
@@ -308,7 +351,7 @@ function Login({ onSubmit, note }) {
     <div className="adm-login">
       <div className="adm-login-card">
         <h1>Admin</h1>
-        <p>Sign in to manage doctors &amp; hospitals.</p>
+        <p>Sign in to manage doctors, hospitals &amp; posts.</p>
         {note && <div className={"adm-note " + (note.kind === "ok" ? "ok" : "err")}>{note.msg}</div>}
         <form onSubmit={onSubmit}>
           <div className="adm-field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="username" /></div>

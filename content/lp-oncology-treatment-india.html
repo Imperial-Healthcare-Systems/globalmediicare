@@ -131,12 +131,7 @@ footer{padding:30px 0;color:#6c7f77;font-size:13px;border-top:1px solid #e5eee9}
     <div class="form-card" id="lead-form">
       <h2>Contact Us</h2>
       <p class="small">Complete the form and our care team will contact you regarding oncology treatment options in India.</p>
-      <form id="oncologyForm" action="https://formsubmit.co/info@globalmediicare.com" method="POST">
-        <input type="hidden" name="_subject" value="New Oncology Enquiry - Globalmediicare">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_next" value="https://www.globalmediicare.com/">
-
+      <form id="oncologyForm" novalidate>
         <div class="form-grid">
           <div class="field"><label for="name">Full Name *</label><input id="name" name="name" required placeholder="Your full name"></div>
           <div class="field"><label for="country">Country *</label><input id="country" name="country" required placeholder="e.g. Zambia, UAE"></div>
@@ -148,7 +143,8 @@ footer{padding:30px 0;color:#6c7f77;font-size:13px;border-top:1px solid #e5eee9}
         </div>
         <button class="btn btn-primary" type="submit">Contact Us</button>
         <p class="privacy">By submitting, you agree to be contacted by Globalmediicare regarding your enquiry. Your information is handled confidentially. We may share relevant details with appropriate healthcare providers only with your consent.</p>
-        <div class="success" id="success">Thank you. Your enquiry has been prepared for WhatsApp. Please press “Send” in WhatsApp to complete your request.</div>
+        <p class="privacy" id="formError" style="display:none;color:#b23b3b"></p>
+        <div class="success" id="success">Thank you — your enquiry has been received. Our care team will contact you shortly regarding oncology treatment options in India.</div>
       </form>
     </div>
   </div>
@@ -248,11 +244,67 @@ footer{padding:30px 0;color:#6c7f77;font-size:13px;border-top:1px solid #e5eee9}
 </footer>
 
 <script>
-document.getElementById('oncologyForm').addEventListener('submit', function() {
-  const btn = this.querySelector('button[type="submit"]');
-  btn.textContent = 'Sending…';
-  btn.disabled = true;
-});
+(function () {
+  var form = document.getElementById('oncologyForm');
+  var success = document.getElementById('success');
+  var errBox = document.getElementById('formError');
+  var btn = form.querySelector('button[type="submit"]');
+  var val = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (btn.disabled) return;
+    errBox.style.display = 'none';
+
+    var name = val('name'), country = val('country'), phone = val('phone');
+    if (!name || !country || !phone) {
+      errBox.textContent = 'Please fill in your name, country and phone number.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    var payload = {
+      source: 'oncology-landing',
+      name: name,
+      country: country,
+      phone: phone,
+      email: val('email'),
+      treatment: val('condition'),
+      stage: val('stage'),
+      message: val('message')
+    };
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    fetch('/api/consult', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d && d.ok) {
+          // hide the form fields; keep the success banner
+          ['form-grid'].forEach(function (c) {
+            var el = form.querySelector('.' + c); if (el) el.style.display = 'none';
+          });
+          btn.style.display = 'none';
+          var priv = form.querySelector('.privacy'); if (priv) priv.style.display = 'none';
+          success.style.display = 'block';
+          success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          throw new Error((d && d.error) || 'Something went wrong.');
+        }
+      })
+      .catch(function (err) {
+        btn.textContent = 'Contact Us';
+        btn.disabled = false;
+        errBox.textContent = (err && err.message) || 'Something went wrong. Please try again or WhatsApp us.';
+        errBox.style.display = 'block';
+      });
+  });
+})();
 </script>
 </body>
 </html>

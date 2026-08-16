@@ -10,6 +10,7 @@
 // If SMTP is not configured the lead is still validated, logged and acknowledged
 // (so the form never breaks) — it just isn't emailed until the vars are set.
 import nodemailer from "nodemailer";
+import { getSupabaseServer } from "../../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,8 @@ async function emailLead(lead) {
     ["Phone", (lead.dialCode ? lead.dialCode + " " : "") + lead.phone],
     ["Email", lead.email],
     ["Hospital / destination", lead.destination],
-    ["Treatment", lead.treatment],
+    ["Treatment / condition", lead.treatment],
+    ["Stage", lead.stage],
     ["Preferred date", lead.preferredDate],
     ["Preferred slot", lead.preferredSlot],
     ["Message", lead.message],
@@ -63,6 +65,30 @@ async function emailLead(lead) {
     html,
   });
   return { sent: true };
+}
+
+// Persist the lead to Supabase so it appears in the admin "Enquiries" tab.
+// Best-effort: if Supabase isn't configured or the write fails, we log and
+// continue (email + acknowledgement still happen).
+async function storeLead(lead) {
+  const sb = getSupabaseServer();
+  if (!sb) return { stored: false, reason: "supabase-not-configured" };
+  const { error } = await sb.from("leads").insert({
+    source: lead.source,
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    dial_code: lead.dialCode,
+    country: lead.country,
+    treatment: lead.treatment,
+    stage: lead.stage,
+    destination: lead.destination,
+    preferred_date: lead.preferredDate,
+    preferred_slot: lead.preferredSlot,
+    message: lead.message,
+  });
+  if (error) return { stored: false, reason: error.message };
+  return { stored: true };
 }
 
 export async function POST(request) {
@@ -93,11 +119,21 @@ export async function POST(request) {
     phone,
     destination: (data?.destination || "").trim(),
     treatment: (data?.treatment || "").trim(),
+    stage: (data?.stage || "").trim(),
     preferredDate: (data?.preferredDate || "").trim(),
     preferredSlot: (data?.preferredSlot || "").trim(),
     message: (data?.message || "").trim(),
     receivedAt: new Date().toISOString(),
   };
+
+  // Store in Supabase (admin panel) and email the team — both best-effort so a
+  // hiccup in one never breaks the user's submission or blocks the other.
+  try {
+    const s = await storeLead(lead);
+    if (!s.stored) console.log("[consult] lead not stored (" + s.reason + "):", lead);
+  } catch (err) {
+    console.error("[consult] store failed:", err?.message || err);
+  }
 
   try {
     const res = await emailLead(lead);

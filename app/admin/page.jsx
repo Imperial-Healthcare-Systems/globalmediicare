@@ -62,9 +62,30 @@ const SCHEMA = {
       { k: "published", l: "Published (visible on site)", t: "checkbox" },
     ],
   },
+  leads: {
+    label: "Enquiries",
+    singular: "Enquiry",
+    readOnly: true, // leads arrive from the public forms — not created by hand
+    columns: ["created_at", "name", "country", "treatment", "source", "status"],
+    fields: [
+      { k: "name", l: "Name", t: "text", full: true },
+      { k: "email", l: "Email", t: "text" },
+      { k: "phone", l: "Phone / WhatsApp", t: "text" },
+      { k: "dial_code", l: "Dial code", t: "text" },
+      { k: "country", l: "Country", t: "text" },
+      { k: "treatment", l: "Treatment / condition", t: "text" },
+      { k: "stage", l: "Stage", t: "text" },
+      { k: "destination", l: "Preferred destination", t: "text" },
+      { k: "preferred_date", l: "Preferred date", t: "text" },
+      { k: "preferred_slot", l: "Preferred slot", t: "text" },
+      { k: "message", l: "Message", t: "textarea", full: true, rows: 4 },
+      { k: "source", l: "Source", t: "text" },
+      { k: "status", l: "Status", t: "select", opts: [{ v: "new", l: "New" }, { v: "contacted", l: "Contacted" }, { v: "closed", l: "Closed" }] },
+    ],
+  },
 };
 
-const ARRAY_KEYS = { doctors: [], hospitals: ["accreditation", "specialties"], posts: ["tags"] };
+const ARRAY_KEYS = { doctors: [], hospitals: ["accreditation", "specialties"], posts: ["tags"], leads: [] };
 
 function slugify(s) {
   return String(s || "").toLowerCase().trim()
@@ -103,10 +124,15 @@ export default function AdminPage() {
     const sb = getSupabase();
     if (!sb) return;
     setLoadingRows(true);
-    let q = sb.from(which).select("*").order("sort_order", { ascending: true });
-    q = which === "posts"
-      ? q.order("published_at", { ascending: false })
-      : q.order("name", { ascending: true });
+    let q = sb.from(which).select("*");
+    if (which === "leads") {
+      q = q.order("created_at", { ascending: false });
+    } else {
+      q = q.order("sort_order", { ascending: true });
+      q = which === "posts"
+        ? q.order("published_at", { ascending: false })
+        : q.order("name", { ascending: true });
+    }
     const { data, error } = await q;
     setLoadingRows(false);
     if (error) { setNote({ kind: "err", msg: error.message }); return; }
@@ -194,7 +220,9 @@ export default function AdminPage() {
           <h2>{schema.label}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <span className="adm-count">{rows.length} record{rows.length === 1 ? "" : "s"}</span>
-            <button className="adm-btn primary" onClick={() => openEdit(blankRecord(tab))}>+ Add {schema.singular || schema.label.slice(0, -1)}</button>
+            {!schema.readOnly && (
+              <button className="adm-btn primary" onClick={() => openEdit(blankRecord(tab))}>+ Add {schema.singular || schema.label.slice(0, -1)}</button>
+            )}
           </div>
         </div>
 
@@ -207,13 +235,13 @@ export default function AdminPage() {
               {loadingRows ? (
                 <tr><td colSpan={schema.columns.length + 1} className="adm-empty">Loading…</td></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={schema.columns.length + 1} className="adm-empty">No records yet. Click “Add” to create one.</td></tr>
+                <tr><td colSpan={schema.columns.length + 1} className="adm-empty">{schema.readOnly ? "No enquiries yet." : "No records yet. Click “Add” to create one."}</td></tr>
               ) : rows.map((row) => (
                 <tr key={row.id} style={{ opacity: row.is_active ? 1 : 0.5 }}>
                   {schema.columns.map((c) => <td key={c} className={(c === "name" || c === "title") ? "adm-name" : ""}>{cell(row[c], c)}</td>)}
                   <td>
                     <div className="adm-rowbtns">
-                      <button className="adm-btn ghost" onClick={() => openEdit(row)}>Edit</button>
+                      <button className="adm-btn ghost" onClick={() => openEdit(row)}>{schema.readOnly ? "View" : "Edit"}</button>
                       <button className="adm-btn danger" onClick={() => remove(row)}>Delete</button>
                     </div>
                   </td>

@@ -98,7 +98,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <div class="topbar">
   <div class="container">
-    <span>Free Medical Opinion</span><span>•</span><span>+91 96510 49119</span><span>•</span><span>info@globalmediicare.com</span>
+    <span>Free Medical Opinion</span><span>•</span><a href="tel:+919651049119">+91 96510 49119</a><span>•</span><a href="mailto:info@globalmediicare.com">info@globalmediicare.com</a>
   </div>
 </div>
 
@@ -296,14 +296,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       .then(function (r) { return r.json().catch(function () { return {}; }); })
       .then(function (d) {
         if (d && d.ok) {
-          // hide the form fields; keep the success banner
-          ['form-grid'].forEach(function (c) {
-            var el = form.querySelector('.' + c); if (el) el.style.display = 'none';
-          });
-          btn.style.display = 'none';
-          var priv = form.querySelector('.privacy'); if (priv) priv.style.display = 'none';
-          success.style.display = 'block';
-          success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Notify GTM (conversion), then send the user to the thank-you page.
+          try { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: 'generate_lead', form: 'oncology-landing' }); } catch (e) {}
+          window.location.href = '/oncology-treatment-india/thank-you';
         } else {
           throw new Error((d && d.error) || 'Something went wrong.');
         }
